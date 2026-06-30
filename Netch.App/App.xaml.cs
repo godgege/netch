@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Netch.App.Services;
 using Netch.App.ViewModels;
@@ -17,7 +18,10 @@ public partial class App : Application
 
     public static MainWindow MainWindow { get; private set; } = null!;
 
+    public static UiLogSink? UiLogSink { get; private set; }
+
     private readonly NetchAppContext _appContext;
+    private UiLogSink? _uiLogSink;
 
     public App()
     {
@@ -29,6 +33,7 @@ public partial class App : Application
         Services = ConfigureServices(_appContext);
 
         InitializeLogging();
+        UiLogSink = _uiLogSink;
         LoadConfiguration();
     }
 
@@ -84,12 +89,16 @@ public partial class App : Application
     private void InitializeLogging()
     {
         var logPath = Path.Combine(_appContext.NetchDir, Constants.LogFile);
+        var uiSink = new UiLogSink(DispatcherQueue.GetForCurrentThread());
+        _uiLogSink = uiSink;
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Async(a => a.File(logPath,
                 outputTemplate: Constants.OutputTemplate,
                 rollingInterval: RollingInterval.Day))
             .WriteTo.Console(outputTemplate: Constants.OutputTemplate)
+            .WriteTo.Sink(uiSink)
             .CreateLogger();
     }
 

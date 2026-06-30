@@ -8,16 +8,16 @@
                     PaneDisplayMode="Left"
                     SelectionChanged="NavView_SelectionChanged">
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Home" Tag="MainPage" />
-            <NavigationViewItem Content="Servers" Tag="ServersPage" />
-            <NavigationViewItem Content="Modes" Tag="ModesPage" />
-            <NavigationViewItem Content="Subscriptions" Tag="SubscriptionPage" />
-            <NavigationViewItem Content="Log" Tag="LogPage" />
+            <NavigationViewItem x:Uid="NavHome" Tag="MainPage" />
+            <NavigationViewItem x:Uid="NavServers" Tag="ServersPage" />
+            <NavigationViewItem x:Uid="NavModes" Tag="ModesPage" />
+            <NavigationViewItem x:Uid="NavSubscriptions" Tag="SubscriptionPage" />
+            <NavigationViewItem x:Uid="NavLog" Tag="LogPage" />
         </NavigationView.MenuItems>
 
         <NavigationView.FooterMenuItems>
-            <NavigationViewItem Content="Settings" Tag="SettingsPage" />
-            <NavigationViewItem Content="About" Tag="AboutPage" />
+            <NavigationViewItem x:Uid="NavSettings" Tag="SettingsPage" />
+            <NavigationViewItem x:Uid="NavAbout" Tag="AboutPage" />
         </NavigationView.FooterMenuItems>
 
         <Frame x:Name="ContentFrame" />

@@ -5,10 +5,21 @@
 
     <ScrollViewer Padding="24">
         <StackPanel Spacing="16" MaxWidth="800">
-            <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock x:Uid="SettingsTitle" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <!-- Appearance -->
+            <Expander Header="Appearance" IsExpanded="True" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="12" Padding="12">
+                    <ComboBox Header="Theme" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="System" />
+                        <ComboBoxItem Content="Light" />
+                        <ComboBoxItem Content="Dark" />
+                    </ComboBox>
+                </StackPanel>
+            </Expander>
 
             <!-- General -->
-            <Expander Header="General" IsExpanded="True" HorizontalAlignment="Stretch">
+            <Expander Header="General" HorizontalAlignment="Stretch">
                 <StackPanel Spacing="12" Padding="12">
                     <NumberBox Header="SOCKS5 Port" Value="{x:Bind ViewModel.Socks5LocalPort, Mode=TwoWay}" Minimum="1" Maximum="65535" />
                     <ToggleSwitch Header="Allow other devices" IsOn="{x:Bind ViewModel.AllowDevices, Mode=TwoWay}" />

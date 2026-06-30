@@ -34,6 +34,12 @@ public sealed partial class MainPage : Page
             ViewModel.AddToGroupCommand.Execute(group);
     }
 
+    private void AddExeToGroup_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: ProcessGroup group })
+            ViewModel.AddExeToGroupCommand.Execute(group);
+    }
+
     private void RemoveGroup_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: ProcessGroup group })

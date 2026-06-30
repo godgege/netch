@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
+using Netch.App;
 using Netch.Utils;
 
 namespace Netch.App.ViewModels;
@@ -35,6 +37,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _checkUpdateWhenOpened;
     [ObservableProperty] private bool _checkBetaUpdate;
     [ObservableProperty] private bool _updateServersWhenOpened;
+
+    // Appearance
+    [ObservableProperty] private int _themeIndex;
 
     private void LoadSettings()
     {
@@ -78,5 +83,51 @@ public partial class SettingsViewModel : ObservableObject
         s.CheckBetaUpdate = CheckBetaUpdate;
         s.UpdateServersWhenOpened = UpdateServersWhenOpened;
         await _configuration.SaveAsync();
+
+        ApplyRunAtStartup(RunAtStartup);
+        ApplyTheme();
+    }
+
+    partial void OnThemeIndexChanged(int value)
+    {
+        ApplyTheme();
+    }
+
+    private void ApplyTheme()
+    {
+        if (App.MainWindow?.Content is Microsoft.UI.Xaml.FrameworkElement root)
+        {
+            root.RequestedTheme = ThemeIndex switch
+            {
+                1 => Microsoft.UI.Xaml.ElementTheme.Light,
+                2 => Microsoft.UI.Xaml.ElementTheme.Dark,
+                _ => Microsoft.UI.Xaml.ElementTheme.Default
+            };
+        }
+    }
+
+    private void ApplyRunAtStartup(bool enable)
+    {
+        const string keyName = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+        const string valueName = "Netch";
+
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(keyName, writable: true);
+            if (key == null) return;
+
+            if (enable)
+            {
+                var exePath = _appContext.NetchExecutable;
+                key.SetValue(valueName, $"\"{exePath}\"");
+            }
+            else
+            {
+                key.DeleteValue(valueName, throwOnMissingValue: false);
+            }
+        }
+        catch
+        {
+        }
     }
 }

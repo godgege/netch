@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Netch</value>
+  </data>
+
+  <!-- MainPage -->
+  <data name="ProxyTitle.Text" xml:space="preserve">
+    <value>SOCKS5 Proxy</value>
+  </data>
+  <data name="HostBox.PlaceholderText" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="PortBox.PlaceholderText" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search apps...</value>
+  </data>
+  <data name="SelectedTitle.Text" xml:space="preserve">
+    <value>Selected</value>
+  </data>
+  <data name="AddFolderTip" xml:space="preserve">
+    <value>Add folder</value>
+  </data>
+  <data name="AddExeTip" xml:space="preserve">
+    <value>Add exe</value>
+  </data>
+  <data name="RemoveTip" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+
+  <!-- MainWindow Navigation -->
+  <data name="NavHome.Content" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="NavServers.Content" xml:space="preserve">
+    <value>Servers</value>
+  </data>
+  <data name="NavModes.Content" xml:space="preserve">
+    <value>Modes</value>
+  </data>
+  <data name="NavSubscriptions.Content" xml:space="preserve">
+    <value>Subscriptions</value>
+  </data>
+  <data name="NavLog.Content" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="NavSettings.Content" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="NavAbout.Content" xml:space="preserve">
+    <value>About</value>
+  </data>
+
+  <!-- Status/Buttons -->
+  <data name="Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>Starting...</value>
+  </data>
+  <data name="Stopping" xml:space="preserve">
+    <value>Stopping...</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Stopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="WaitingForCommand" xml:space="preserve">
+    <value>Waiting for command</value>
+  </data>
+  <data name="InvalidPort" xml:space="preserve">
+    <value>Please enter a valid port</value>
+  </data>
+  <data name="PortNotReachable" xml:space="preserve">
+    <value>Port {0} is not reachable on {1}</value>
+  </data>
+  <data name="NoProcesses" xml:space="preserve">
+    <value>No processes added</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Access denied: {0}</value>
+  </data>
+
+  <!-- Settings -->
+  <data name="SettingsTitle.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="GeneralHeader" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="StartupHeader" xml:space="preserve">
+    <value>Startup &amp; Exit</value>
+  </data>
+  <data name="ExitWhenClosed" xml:space="preserve">
+    <value>Exit when closed</value>
+  </data>
+  <data name="StopWhenExited" xml:space="preserve">
+    <value>Stop when exited</value>
+  </data>
+  <data name="StartWhenOpened" xml:space="preserve">
+    <value>Start when opened</value>
+  </data>
+  <data name="MinimizeWhenStarted" xml:space="preserve">
+    <value>Minimize when started</value>
+  </data>
+  <data name="RunAtStartup" xml:space="preserve">
+    <value>Run at startup</value>
+  </data>
+
+  <!-- Tray -->
+  <data name="TrayShow" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="TrayExit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+</root>

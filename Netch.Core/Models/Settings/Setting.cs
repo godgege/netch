@@ -145,6 +145,21 @@ public class Setting
 
     public bool NoSupportDialog { get; set; } = false;
 
+    /// <summary>
+    ///     Netch Lite: 已选中的应用安装路径列表（用于持久化主页选择）
+    /// </summary>
+    public List<string> SelectedAppPaths { get; set; } = new();
+
+    /// <summary>
+    ///     Netch Lite: 代理目标 Host
+    /// </summary>
+    public string LiteProxyHost { get; set; } = "127.0.0.1";
+
+    /// <summary>
+    ///     Netch Lite: 代理目标 Port
+    /// </summary>
+    public string LiteProxyPort { get; set; } = "";
+
     #region Migration
 
     [Obsolete]
