@@ -1,4 +1,0 @@
-D:\_my\netch\Netch.Core\obj\Debug\Netch.Core.csproj.AssemblyReference.cache
-D:\_my\netch\Netch.Core\obj\Debug\Netch.Core.GeneratedMSBuildEditorConfig.editorconfig
-D:\_my\netch\Netch.Core\obj\Debug\Netch.Core.csproj.CoreCompileInputs.cache
-D:\_my\netch\Netch.Core\obj\Debug\Netch.Core.sourcelink.json
