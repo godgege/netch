@@ -1,0 +1,45 @@
+<Page
+    x:Class="Netch.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16" MaxWidth="800">
+            <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <!-- General -->
+            <Expander Header="General" IsExpanded="True" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="12" Padding="12">
+                    <NumberBox Header="SOCKS5 Port" Value="{x:Bind ViewModel.Socks5LocalPort, Mode=TwoWay}" Minimum="1" Maximum="65535" />
+                    <ToggleSwitch Header="Allow other devices" IsOn="{x:Bind ViewModel.AllowDevices, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Use TCP Ping" IsOn="{x:Bind ViewModel.ServerTCPing, Mode=TwoWay}" />
+                    <NumberBox Header="Profile Count" Value="{x:Bind ViewModel.ProfileCount, Mode=TwoWay}" Minimum="0" Maximum="20" />
+                    <NumberBox Header="Detection Tick (s)" Value="{x:Bind ViewModel.DetectionTick, Mode=TwoWay}" />
+                    <TextBox Header="STUN Server" Text="{x:Bind ViewModel.StunServer, Mode=TwoWay}" />
+                </StackPanel>
+            </Expander>
+
+            <!-- Startup -->
+            <Expander Header="Startup &amp; Exit" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="12" Padding="12">
+                    <ToggleSwitch Header="Exit when closed" IsOn="{x:Bind ViewModel.ExitWhenClosed, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Stop when exited" IsOn="{x:Bind ViewModel.StopWhenExited, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Start when opened" IsOn="{x:Bind ViewModel.StartWhenOpened, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Minimize when started" IsOn="{x:Bind ViewModel.MinimizeWhenStarted, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Run at startup" IsOn="{x:Bind ViewModel.RunAtStartup, Mode=TwoWay}" />
+                </StackPanel>
+            </Expander>
+
+            <!-- Updates -->
+            <Expander Header="Updates" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="12" Padding="12">
+                    <ToggleSwitch Header="Check update when opened" IsOn="{x:Bind ViewModel.CheckUpdateWhenOpened, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Check beta updates" IsOn="{x:Bind ViewModel.CheckBetaUpdate, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Update servers when opened" IsOn="{x:Bind ViewModel.UpdateServersWhenOpened, Mode=TwoWay}" />
+                </StackPanel>
+            </Expander>
+
+            <Button Content="Save" Command="{x:Bind ViewModel.SaveCommand}" Style="{StaticResource AccentButtonStyle}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

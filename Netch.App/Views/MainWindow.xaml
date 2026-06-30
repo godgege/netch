@@ -1,0 +1,25 @@
+<Window
+    x:Class="Netch.App.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <NavigationView x:Name="NavView"
+                    IsBackButtonVisible="Collapsed"
+                    PaneDisplayMode="Left"
+                    SelectionChanged="NavView_SelectionChanged">
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content="Home" Tag="MainPage" />
+            <NavigationViewItem Content="Servers" Tag="ServersPage" />
+            <NavigationViewItem Content="Modes" Tag="ModesPage" />
+            <NavigationViewItem Content="Subscriptions" Tag="SubscriptionPage" />
+            <NavigationViewItem Content="Log" Tag="LogPage" />
+        </NavigationView.MenuItems>
+
+        <NavigationView.FooterMenuItems>
+            <NavigationViewItem Content="Settings" Tag="SettingsPage" />
+            <NavigationViewItem Content="About" Tag="AboutPage" />
+        </NavigationView.FooterMenuItems>
+
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
+</Window>

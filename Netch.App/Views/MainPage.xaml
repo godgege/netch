@@ -1,0 +1,77 @@
+<Page
+    x:Class="Netch.App.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Netch.App.ViewModels">
+
+    <Grid Padding="24" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Server Selection -->
+        <StackPanel Grid.Row="0" Spacing="8">
+            <TextBlock Text="Server" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <ListView x:Name="ServerList"
+                      ItemsSource="{x:Bind ViewModel.Servers}"
+                      SelectedItem="{x:Bind ViewModel.SelectedServer, Mode=TwoWay}"
+                      MaxHeight="200"
+                      SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="4">
+                            <TextBlock Text="{Binding Remark}" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+
+        <!-- Mode Selection -->
+        <StackPanel Grid.Row="1" Spacing="8">
+            <TextBlock Text="Mode" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <ListView x:Name="ModeList"
+                      ItemsSource="{x:Bind ViewModel.Modes}"
+                      SelectedItem="{x:Bind ViewModel.SelectedMode, Mode=TwoWay}"
+                      MaxHeight="150"
+                      SelectionMode="Single">
+            </ListView>
+        </StackPanel>
+
+        <!-- Profiles -->
+        <StackPanel Grid.Row="2" Spacing="8">
+            <TextBlock Text="Profiles" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Profiles}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout MinItemWidth="120" MinColumnSpacing="8" MinRowSpacing="8" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <Button Content="{Binding ProfileName}" HorizontalAlignment="Stretch" />
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </StackPanel>
+
+        <!-- Bottom Bar: Start/Stop + Status -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                       VerticalAlignment="Center" />
+
+            <Button Grid.Column="1"
+                    Content="{x:Bind ViewModel.ControlButtonText, Mode=OneWay}"
+                    Command="{x:Bind ViewModel.StartStopCommand}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    MinWidth="120" />
+        </Grid>
+    </Grid>
+</Page>

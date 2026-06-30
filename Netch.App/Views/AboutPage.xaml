@@ -1,0 +1,12 @@
+<Page
+    x:Class="Netch.App.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Padding="24" Spacing="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock Text="Netch" Style="{StaticResource TitleTextBlockStyle}" HorizontalAlignment="Center" />
+        <TextBlock Text="A Windows proxy client with multiple protocol support." HorizontalAlignment="Center" />
+        <TextBlock Text="License: GPLv3" Foreground="Gray" HorizontalAlignment="Center" />
+        <HyperlinkButton Content="GitHub" NavigateUri="https://github.com/netchx/netch" HorizontalAlignment="Center" />
+    </StackPanel>
+</Page>
