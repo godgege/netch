@@ -2,62 +2,116 @@
     x:Class="Netch.App.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:vm="using:Netch.App.ViewModels">
+    xmlns:models="using:Netch.App.Models">
 
     <Grid Padding="24" RowSpacing="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Server Selection -->
+        <!-- Row 0: SOCKS5 Proxy Input -->
         <StackPanel Grid.Row="0" Spacing="8">
-            <TextBlock Text="Server" Style="{StaticResource SubtitleTextBlockStyle}" />
-            <ListView x:Name="ServerList"
-                      ItemsSource="{x:Bind ViewModel.Servers}"
-                      SelectedItem="{x:Bind ViewModel.SelectedServer, Mode=TwoWay}"
-                      MaxHeight="200"
-                      SelectionMode="Single">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Padding="4">
-                            <TextBlock Text="{Binding Remark}" VerticalAlignment="Center" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <TextBlock Text="SOCKS5 Proxy" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBox Text="{x:Bind ViewModel.ProxyHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="Host"
+                         Width="200" />
+                <TextBox Text="{x:Bind ViewModel.ProxyPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="Port"
+                         Width="100" />
+            </StackPanel>
         </StackPanel>
 
-        <!-- Mode Selection -->
-        <StackPanel Grid.Row="1" Spacing="8">
-            <TextBlock Text="Mode" Style="{StaticResource SubtitleTextBlockStyle}" />
-            <ListView x:Name="ModeList"
-                      ItemsSource="{x:Bind ViewModel.Modes}"
-                      SelectedItem="{x:Bind ViewModel.SelectedMode, Mode=TwoWay}"
-                      MaxHeight="150"
-                      SelectionMode="Single">
-            </ListView>
-        </StackPanel>
+        <!-- Row 1: Two-panel layout -->
+        <Grid Grid.Row="1" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <!-- Profiles -->
-        <StackPanel Grid.Row="2" Spacing="8">
-            <TextBlock Text="Profiles" Style="{StaticResource SubtitleTextBlockStyle}" />
-            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Profiles}">
-                <ItemsRepeater.Layout>
-                    <UniformGridLayout MinItemWidth="120" MinColumnSpacing="8" MinRowSpacing="8" />
-                </ItemsRepeater.Layout>
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate>
-                        <Button Content="{Binding ProfileName}" HorizontalAlignment="Stretch" />
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
-        </StackPanel>
+            <!-- Left: App list with search -->
+            <Grid Grid.Column="0" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-        <!-- Bottom Bar: Start/Stop + Status -->
-        <Grid Grid.Row="3">
+                <TextBox Grid.Row="0"
+                         PlaceholderText="Search apps..."
+                         Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <ListView Grid.Row="1"
+                          ItemsSource="{x:Bind ViewModel.FilteredApps}"
+                          SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:InstalledApp">
+                            <CheckBox Content="{x:Bind Name}"
+                                      IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                      Click="AppCheckBox_Click"
+                                      Tag="{x:Bind}"
+                                      MinWidth="0"
+                                      Padding="4,2" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <!-- Right: Selected process groups -->
+            <Grid Grid.Column="1" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Selected" Style="{StaticResource BodyStrongTextBlockStyle}" />
+
+                <ListView Grid.Row="1"
+                          ItemsSource="{x:Bind ViewModel.ProcessGroups}"
+                          SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ProcessGroup">
+                            <StackPanel Spacing="4" Padding="0,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="{x:Bind GroupName}"
+                                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                                               VerticalAlignment="Center" />
+                                    <Button Grid.Column="1"
+                                            Content="&#xE710;"
+                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            Margin="4,0"
+                                            Padding="8,4"
+                                            ToolTipService.ToolTip="Add more"
+                                            Tag="{x:Bind}"
+                                            Click="AddToGroup_Click" />
+                                    <Button Grid.Column="2"
+                                            Content="&#xE711;"
+                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            Padding="8,4"
+                                            ToolTipService.ToolTip="Remove"
+                                            Tag="{x:Bind}"
+                                            Click="RemoveGroup_Click" />
+                                </Grid>
+                                <TextBlock Text="{x:Bind DisplayText, Mode=OneWay}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="12,0,0,0" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Grid>
+
+        <!-- Row 2: Bottom Bar -->
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -65,7 +119,8 @@
 
             <TextBlock Grid.Column="0"
                        Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
-                       VerticalAlignment="Center" />
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
 
             <Button Grid.Column="1"
                     Content="{x:Bind ViewModel.ControlButtonText, Mode=OneWay}"

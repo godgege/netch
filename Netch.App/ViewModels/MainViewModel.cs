@@ -1,11 +1,14 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Netch.App.Models;
+using Netch.App.Services;
 using Netch.Controllers;
 using Netch.Enums;
-using Netch.Models;
-using Netch.Models.Modes;
-using Netch.Utils;
+using Netch.Models.Modes.ProcessMode;
+using Netch.Servers;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 namespace Netch.App.ViewModels;
 
@@ -13,67 +16,48 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly NetchAppContext _appContext;
     private readonly MainController _mainController;
-    private readonly DelayTestHelper _delayTestHelper;
-
-    public ObservableCollection<Server> Servers { get; } = new();
-    public ObservableCollection<Mode> Modes { get; } = new();
-    public ObservableCollection<Profile> Profiles { get; } = new();
+    private List<InstalledApp> _allApps = new();
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StartStopCommand))]
     private State _currentState = State.Waiting;
 
     [ObservableProperty]
-    private Server? _selectedServer;
+    private string _proxyHost = "127.0.0.1";
 
     [ObservableProperty]
-    private Mode? _selectedMode;
+    private string _proxyPort = "";
 
     [ObservableProperty]
     private string _statusText = "Waiting for command";
 
     [ObservableProperty]
-    private string _downloadSpeed = "";
+    private string _searchText = "";
 
-    [ObservableProperty]
-    private string _uploadSpeed = "";
-
-    [ObservableProperty]
-    private string _usedBandwidth = "";
-
-    [ObservableProperty]
-    private bool _isBandwidthVisible;
+    public ObservableCollection<InstalledApp> FilteredApps { get; } = new();
+    public ObservableCollection<ProcessGroup> ProcessGroups { get; } = new();
 
     public bool CanStartStop => CurrentState is State.Waiting or State.Stopped or State.Started;
 
     public string ControlButtonText => CurrentState switch
     {
-        State.Waiting or State.Stopped => i18N.Translate("Start"),
-        State.Started => i18N.Translate("Stop"),
-        State.Starting => i18N.Translate("Starting"),
-        State.Stopping => i18N.Translate("Stopping"),
+        State.Waiting or State.Stopped => "Start",
+        State.Started => "Stop",
+        State.Starting => "Starting...",
+        State.Stopping => "Stopping...",
         _ => ""
     };
 
-    public MainViewModel(NetchAppContext appContext, MainController mainController, DelayTestHelper delayTestHelper)
+    public MainViewModel(NetchAppContext appContext, MainController mainController)
     {
         _appContext = appContext;
         _mainController = mainController;
-        _delayTestHelper = delayTestHelper;
-
-        LoadData();
     }
 
-    private void LoadData()
+    public void Initialize()
     {
-        foreach (var server in _appContext.Settings.Server)
-            Servers.Add(server);
-
-        foreach (var mode in _appContext.Modes)
-            Modes.Add(mode);
-
-        foreach (var profile in _appContext.Settings.Profiles)
-            Profiles.Add(profile);
+        _allApps = AppDiscoveryService.DiscoverInstalledApps();
+        ApplyFilter();
     }
 
     partial void OnCurrentStateChanged(State value)
@@ -82,29 +66,81 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(ControlButtonText));
     }
 
+    partial void OnSearchTextChanged(string value)
+    {
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        FilteredApps.Clear();
+        var query = SearchText.Trim();
+        var filtered = string.IsNullOrEmpty(query)
+            ? _allApps
+            : _allApps.Where(a => a.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+
+        foreach (var app in filtered)
+            FilteredApps.Add(app);
+    }
+
+    public void OnAppSelectionChanged(InstalledApp app)
+    {
+        if (app.IsSelected)
+        {
+            var group = new ProcessGroup { GroupName = app.Name };
+            ScanDirectoryInto(app.InstallPath, group);
+            if (group.Processes.Count > 0)
+                ProcessGroups.Add(group);
+        }
+        else
+        {
+            var group = ProcessGroups.FirstOrDefault(g => g.GroupName == app.Name);
+            if (group != null)
+                ProcessGroups.Remove(group);
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanStartStop))]
     private async Task StartStopAsync()
     {
         if (CurrentState is State.Waiting or State.Stopped)
-        {
             await StartAsync();
-        }
         else if (CurrentState == State.Started)
-        {
             await StopAsync();
-        }
     }
 
     private async Task StartAsync()
     {
-        if (SelectedServer == null || SelectedMode == null)
+        if (!ushort.TryParse(ProxyPort, out var port) || port == 0)
+        {
+            StatusText = "Please enter a valid port";
             return;
+        }
+
+        var allProcesses = ProcessGroups.SelectMany(g => g.Processes).ToList();
+        if (allProcesses.Count == 0)
+        {
+            StatusText = "No processes added";
+            return;
+        }
+
+        var server = new Socks5Server(ProxyHost, port);
+
+        var mode = new Redirector
+        {
+            FilterIntranet = true,
+            FilterLoopback = false
+        };
+        foreach (var proc in allProcesses)
+            mode.Handle.Add(proc.FileName);
 
         try
         {
             CurrentState = State.Starting;
-            await _mainController.StartAsync(SelectedServer, SelectedMode);
+            StatusText = "Starting...";
+            await _mainController.StartAsync(server, mode);
             CurrentState = State.Started;
+            StatusText = "Running";
         }
         catch (Exception ex)
         {
@@ -118,8 +154,10 @@ public partial class MainViewModel : ObservableObject
         try
         {
             CurrentState = State.Stopping;
+            StatusText = "Stopping...";
             await _mainController.StopAsync();
             CurrentState = State.Stopped;
+            StatusText = "Stopped";
         }
         catch (Exception ex)
         {
@@ -129,11 +167,44 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task TestDelayAsync()
+    private async Task AddToGroupAsync(ProcessGroup group)
     {
-        if (SelectedServer != null)
+        var picker = new FolderPicker();
+        picker.FileTypeFilter.Add("*");
+
+        var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+        InitializeWithWindow.Initialize(picker, hwnd);
+
+        var folder = await picker.PickSingleFolderAsync();
+        if (folder == null)
+            return;
+
+        ScanDirectoryInto(folder.Path, group);
+    }
+
+    [RelayCommand]
+    private void RemoveGroup(ProcessGroup group)
+    {
+        ProcessGroups.Remove(group);
+        var app = _allApps.FirstOrDefault(a => a.Name == group.GroupName);
+        if (app != null)
+            app.IsSelected = false;
+    }
+
+    private void ScanDirectoryInto(string path, ProcessGroup group)
+    {
+        try
         {
-            await SelectedServer.PingAsync(_appContext.Settings.ServerTCPing);
+            var exes = Directory.EnumerateFiles(path, "*.exe", SearchOption.AllDirectories);
+            foreach (var exe in exes)
+            {
+                if (group.Processes.All(p => !p.FullPath.Equals(exe, StringComparison.OrdinalIgnoreCase)))
+                    group.Processes.Add(new ProcessEntry { FullPath = exe });
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            StatusText = $"Access denied: {path}";
         }
     }
 }

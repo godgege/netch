@@ -12,6 +12,7 @@
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,5 +26,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Netch.Core\Netch.Core.csproj" />
   </ItemGroup>
+
+  <Target Name="CopyNativeBinaries" AfterTargets="Build">
+    <Copy SourceFiles="D:\Netch\bin\Redirector.bin;D:\Netch\bin\nfapi.dll"
+          DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    <MakeDir Directories="$(OutputPath)bin" />
+    <Copy SourceFiles="D:\Netch\bin\nfdriver.sys"
+          DestinationFolder="$(OutputPath)bin\" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

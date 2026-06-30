@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Netch.App.Models;
 using Netch.App.ViewModels;
 
 namespace Netch.App.Views;
@@ -12,5 +14,29 @@ public sealed partial class MainPage : Page
     {
         ViewModel = App.Services.GetRequiredService<MainViewModel>();
         InitializeComponent();
+        Loaded += OnLoaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.Initialize();
+    }
+
+    private void AppCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox { Tag: InstalledApp app })
+            ViewModel.OnAppSelectionChanged(app);
+    }
+
+    private void AddToGroup_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: ProcessGroup group })
+            ViewModel.AddToGroupCommand.Execute(group);
+    }
+
+    private void RemoveGroup_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: ProcessGroup group })
+            ViewModel.RemoveGroupCommand.Execute(group);
     }
 }
