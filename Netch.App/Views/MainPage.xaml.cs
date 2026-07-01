@@ -15,11 +15,18 @@ public sealed partial class MainPage : Page
         ViewModel = App.Services.GetRequiredService<MainViewModel>();
         InitializeComponent();
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         ViewModel.Initialize();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SaveSettings();
+        ViewModel.Dispose();
     }
 
     private void AppCheckBox_Click(object sender, RoutedEventArgs e)

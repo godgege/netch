@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -43,7 +44,7 @@ public sealed partial class MainWindow : Window
         menu.Items.Add(exitItem);
 
         _trayIcon.ContextFlyout = menu;
-        _trayIcon.TrayIconLeftMouseUp += (_, _) => ShowWindow();
+        _trayIcon.LeftClickCommand = new RelayCommand(ShowWindow);
     }
 
     private void ShowWindow()
@@ -79,7 +80,6 @@ public sealed partial class MainWindow : Window
         var pageType = tag switch
         {
             "MainPage" => typeof(MainPage),
-            "ServersPage" => typeof(ServersPage),
             "ModesPage" => typeof(ModesPage),
             "SubscriptionPage" => typeof(SubscriptionPage),
             "LogPage" => typeof(LogPage),

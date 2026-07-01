@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Netch.Models;
 
@@ -153,12 +153,17 @@ public class Setting
     /// <summary>
     ///     Netch Lite: 代理目标 Host
     /// </summary>
-    public string LiteProxyHost { get; set; } = "127.0.0.1";
+    public string LiteProxyHost { get; set; } = "";
 
     /// <summary>
     ///     Netch Lite: 代理目标 Port
     /// </summary>
     public string LiteProxyPort { get; set; } = "";
+
+    /// <summary>
+    ///     Netch Lite: 是否自动覆写/填写本地代理地址 (127.0.0.1)
+    /// </summary>
+    public bool UseLocalhostOverride { get; set; } = false;
 
     #region Migration
 

@@ -1,74 +1,96 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Netch.App.Services;
 
 namespace Netch.App.ViewModels;
 
-public partial class LogViewModel : ObservableObject
+public partial class LogViewModel : ObservableObject, IDisposable
 {
-    public ObservableCollection<string> LogEntries { get; } = new();
+    private static readonly ObservableCollection<string> EmptyLogEntries = new();
+    private readonly LiteModeManager _liteModeManager;
+    private readonly ObservableCollection<string> _sourceLogEntries;
+    private readonly ObservableCollection<string> _visibleLogEntries = new();
+    private bool _showAllProcessEvents;
+    private bool _disposed;
 
-    [ObservableProperty]
-    private bool _autoScroll = true;
+    public ObservableCollection<string> VisibleLogEntries => _visibleLogEntries;
 
-    private FileSystemWatcher? _watcher;
-    private string? _logFilePath;
-    private long _lastPosition;
-
-    public void StartWatching(string logFilePath)
+    public LogViewModel(LiteModeManager liteModeManager)
     {
-        _logFilePath = logFilePath;
-        if (!File.Exists(logFilePath)) return;
+        _liteModeManager = liteModeManager;
+        _sourceLogEntries = App.UiLogSink?.LogEntries ?? EmptyLogEntries;
 
-        LoadExistingEntries();
+        _sourceLogEntries.CollectionChanged += SourceLogEntries_CollectionChanged;
+        _liteModeManager.PropertyChanged += LiteModeManager_PropertyChanged;
 
-        var dir = Path.GetDirectoryName(logFilePath)!;
-        var filename = Path.GetFileName(logFilePath);
-        _watcher = new FileSystemWatcher(dir, filename)
-        {
-            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
-            EnableRaisingEvents = true
-        };
-        _watcher.Changed += OnLogFileChanged;
+        RefreshVisibleLogEntries();
     }
 
-    private void LoadExistingEntries()
+    public bool ShowAllProcessEvents
     {
-        if (_logFilePath == null || !File.Exists(_logFilePath)) return;
-
-        using var fs = new FileStream(_logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        using var reader = new StreamReader(fs);
-        while (reader.ReadLine() is { } line)
+        get => _showAllProcessEvents;
+        set
         {
-            LogEntries.Add(line);
-        }
-        _lastPosition = fs.Position;
-    }
-
-    private void OnLogFileChanged(object sender, FileSystemEventArgs e)
-    {
-        if (_logFilePath == null) return;
-
-        try
-        {
-            using var fs = new FileStream(_logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            fs.Seek(_lastPosition, SeekOrigin.Begin);
-            using var reader = new StreamReader(fs);
-            while (reader.ReadLine() is { } line)
-            {
-                var entry = line;
-                App.MainWindow?.DispatcherQueue.TryEnqueue(() => LogEntries.Add(entry));
-            }
-            _lastPosition = fs.Position;
-        }
-        catch
-        {
-            // File may be locked temporarily
+            if (SetProperty(ref _showAllProcessEvents, value))
+                RefreshVisibleLogEntries();
         }
     }
 
-    public void StopWatching()
+    public void Dispose()
     {
-        _watcher?.Dispose();
-        _watcher = null;
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        _sourceLogEntries.CollectionChanged -= SourceLogEntries_CollectionChanged;
+        _liteModeManager.PropertyChanged -= LiteModeManager_PropertyChanged;
+    }
+
+    private void SourceLogEntries_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        RefreshVisibleLogEntries();
+    }
+
+    private void LiteModeManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LiteModeManager.CurrentProcessNames))
+            RefreshVisibleLogEntries();
+    }
+
+    private void RefreshVisibleLogEntries()
+    {
+        if (_disposed)
+            return;
+
+        var selectedNames = _liteModeManager.CurrentProcessNames;
+        _visibleLogEntries.Clear();
+
+        foreach (var entry in _sourceLogEntries)
+        {
+            if (ShouldShowEntry(entry, selectedNames))
+                _visibleLogEntries.Add(entry);
+        }
+    }
+
+    private bool ShouldShowEntry(string entry, IReadOnlyList<string> selectedNames)
+    {
+        if (!entry.Contains("[Redirector][EventHandler]", StringComparison.Ordinal))
+            return true;
+
+        if (ShowAllProcessEvents)
+            return true;
+
+        if (selectedNames.Count == 0)
+            return false;
+
+        foreach (var name in selectedNames)
+        {
+            if (entry.Contains(name, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 }

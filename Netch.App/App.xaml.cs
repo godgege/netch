@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Netch.App.Helpers;
 using Netch.App.Services;
 using Netch.App.ViewModels;
 using Netch.App.Views;
@@ -68,6 +69,7 @@ public partial class App : Application
         services.AddSingleton<IModeListManager, ModeListManagerService>();
         services.AddSingleton<IWindowActivator, WindowActivatorService>();
         services.AddSingleton<MainController>();
+        services.AddSingleton<LiteModeManager>();
         services.AddSingleton<ModeService>();
         services.AddSingleton<Configuration>();
         services.AddSingleton<DelayTestHelper>();
@@ -97,9 +99,10 @@ public partial class App : Application
             .WriteTo.Async(a => a.File(logPath,
                 outputTemplate: Constants.OutputTemplate,
                 rollingInterval: RollingInterval.Day))
-            .WriteTo.Console(outputTemplate: Constants.OutputTemplate)
             .WriteTo.Sink(uiSink)
             .CreateLogger();
+
+        StdoutRedirector.StartRedirecting();
     }
 
     private void LoadConfiguration()

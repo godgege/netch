@@ -174,6 +174,9 @@ extern "C" {
 
 	__declspec(dllexport) BOOL __cdecl aio_init()
 	{
+		setvbuf(stdout, nullptr, _IONBF, 0);
+		setvbuf(stderr, nullptr, _IONBF, 0);
+
 		WSADATA data;
 		if (WSAStartup(MAKEWORD(2, 2), &data) != NO_ERROR)
 		{

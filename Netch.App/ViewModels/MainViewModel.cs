@@ -1,76 +1,69 @@
 using System.Collections.ObjectModel;
-using System.Net;
-using System.Net.Sockets;
+using System.ComponentModel;
+using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Netch.App.Models;
 using Netch.App.Services;
-using Netch.Controllers;
 using Netch.Enums;
-using Netch.Models.Modes.ProcessMode;
-using Netch.Servers;
 using Netch.Utils;
-using Serilog;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 
 namespace Netch.App.ViewModels;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly NetchAppContext _appContext;
-    private readonly MainController _mainController;
+    private readonly LiteModeManager _liteModeManager;
     private readonly Configuration _configuration;
     private List<InstalledApp> _allApps = new();
+    private CancellationTokenSource? _saveCts;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(StartStopCommand))]
-    private State _currentState = State.Waiting;
+    private string _proxyHost = string.Empty;
 
     [ObservableProperty]
-    private string _proxyHost = "127.0.0.1";
+    private string _proxyPort = string.Empty;
 
     [ObservableProperty]
-    private string _proxyPort = "";
+    private string _searchText = string.Empty;
 
     [ObservableProperty]
-    private string _statusText = "Waiting for command";
+    private bool _useLocalhostOverride;
 
-    [ObservableProperty]
-    private string _searchText = "";
+    public State CurrentState => _liteModeManager.CurrentState;
 
-    [ObservableProperty]
-    private bool _isLogExpanded;
+    public string StatusText => _liteModeManager.StatusText;
+
+    public bool IsHostEditable => !UseLocalhostOverride;
 
     public ObservableCollection<InstalledApp> FilteredApps { get; } = new();
+
     public ObservableCollection<ProcessGroup> ProcessGroups { get; } = new();
-    public ObservableCollection<string> LogEntries => App.UiLogSink?.LogEntries ?? new();
 
-    public bool CanStartStop => CurrentState is State.Waiting or State.Stopped or State.Started;
+    public bool CanStartStop => _liteModeManager.CanStartStop;
 
-    public string ControlButtonText => CurrentState switch
-    {
-        State.Waiting or State.Stopped => "Start",
-        State.Started => "Stop",
-        State.Starting => "Starting...",
-        State.Stopping => "Stopping...",
-        _ => ""
-    };
+    public string ControlButtonText => _liteModeManager.ControlButtonText;
 
-    public MainViewModel(NetchAppContext appContext, MainController mainController, Configuration configuration)
+    public MainViewModel(NetchAppContext appContext, LiteModeManager liteModeManager, Configuration configuration)
     {
         _appContext = appContext;
-        _mainController = mainController;
+        _liteModeManager = liteModeManager;
         _configuration = configuration;
+        _liteModeManager.PropertyChanged += LiteModeManager_PropertyChanged;
     }
 
     public void Initialize()
     {
         var settings = _appContext.Settings;
-        ProxyHost = settings.LiteProxyHost;
+        UseLocalhostOverride = settings.UseLocalhostOverride;
+        ProxyHost = UseLocalhostOverride ? "127.0.0.1" : settings.LiteProxyHost;
         ProxyPort = settings.LiteProxyPort;
 
         _allApps = AppDiscoveryService.DiscoverInstalledApps();
+        FilteredApps.Clear();
+        ProcessGroups.Clear();
 
         var savedPaths = settings.SelectedAppPaths;
         foreach (var app in _allApps)
@@ -88,15 +81,69 @@ public partial class MainViewModel : ObservableObject
         ApplyFilter();
     }
 
-    partial void OnCurrentStateChanged(State value)
+    public void Dispose()
     {
-        OnPropertyChanged(nameof(CanStartStop));
-        OnPropertyChanged(nameof(ControlButtonText));
+        _liteModeManager.PropertyChanged -= LiteModeManager_PropertyChanged;
+        _saveCts?.Cancel();
+        _saveCts?.Dispose();
+    }
+    public void SaveSettings()
+    {
+        _ = SaveSelectionAsync();
+    }
+
+    partial void OnProxyHostChanged(string value)
+    {
+        _ = SaveSelectionWithDebounceAsync();
+    }
+
+    partial void OnProxyPortChanged(string value)
+    {
+        _ = SaveSelectionWithDebounceAsync();
+    }
+
+    partial void OnUseLocalhostOverrideChanged(bool value)
+    {
+        if (value)
+        {
+            ProxyHost = "127.0.0.1";
+        }
+
+        OnPropertyChanged(nameof(IsHostEditable));
+        _ = SaveSelectionWithDebounceAsync();
     }
 
     partial void OnSearchTextChanged(string value)
     {
         ApplyFilter();
+    }
+
+    private void LiteModeManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LiteModeManager.CurrentState))
+        {
+            OnPropertyChanged(nameof(CurrentState));
+            OnPropertyChanged(nameof(CanStartStop));
+            OnPropertyChanged(nameof(ControlButtonText));
+            StartStopCommand.NotifyCanExecuteChanged();
+        }
+        else if (e.PropertyName == nameof(LiteModeManager.StatusText))
+        {
+            OnPropertyChanged(nameof(StatusText));
+        }
+        else if (e.PropertyName == nameof(LiteModeManager.CanStartStop))
+        {
+            OnPropertyChanged(nameof(CanStartStop));
+            StartStopCommand.NotifyCanExecuteChanged();
+        }
+        else if (e.PropertyName == nameof(LiteModeManager.ControlButtonText))
+        {
+            OnPropertyChanged(nameof(ControlButtonText));
+        }
+        else if (e.PropertyName == nameof(LiteModeManager.CurrentProcessNames))
+        {
+            OnPropertyChanged(nameof(StatusText));
+        }
     }
 
     private void ApplyFilter()
@@ -136,90 +183,14 @@ public partial class MainViewModel : ObservableObject
         if (CurrentState is State.Waiting or State.Stopped)
             await StartAsync();
         else if (CurrentState == State.Started)
-            await StopAsync();
+            await _liteModeManager.StopAsync();
     }
 
     private async Task StartAsync()
     {
-        if (!ushort.TryParse(ProxyPort, out var port) || port == 0)
-        {
-            StatusText = "Please enter a valid port";
-            return;
-        }
-
-        StatusText = "Testing proxy connectivity...";
-        var ip = await ResolveHostAsync(ProxyHost);
-        if (ip == null)
-        {
-            Log.Warning("Cannot resolve host {Host}", ProxyHost);
-            StatusText = $"Cannot resolve host: {ProxyHost}";
-            return;
-        }
-
-        var delay = await Netch.Utils.Utils.TCPingAsync(ip, port, 2000);
-        if (delay >= 2000)
-        {
-            Log.Warning("Proxy {Host}:{Port} is not reachable (timeout)", ProxyHost, port);
-            StatusText = $"Proxy not reachable: {ProxyHost}:{port} (timeout)";
-            return;
-        }
-
-        Log.Information("Proxy {Host}:{Port} connected, delay {Delay}ms", ProxyHost, port, delay);
-
-        var allProcesses = ProcessGroups.SelectMany(g => g.Processes).ToList();
-        if (allProcesses.Count == 0)
-        {
-            StatusText = "No processes added";
-            return;
-        }
-
-        var server = new Socks5Server(ProxyHost, port);
-
-        var mode = new Redirector
-        {
-            FilterIntranet = true,
-            FilterLoopback = false
-        };
-        foreach (var proc in allProcesses)
-            mode.Handle.Add(proc.FileName);
-
-        Log.Information("Starting redirector → {Host}:{Port}, processes: {List}",
-            ProxyHost, port, string.Join(", ", allProcesses.Select(p => p.FileName)));
-
-        try
-        {
-            CurrentState = State.Starting;
-            StatusText = "Starting...";
-            await _mainController.StartAsync(server, mode);
-            CurrentState = State.Started;
-            StatusText = "Running";
-            Log.Information("Redirector started successfully");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Redirector start failed");
-            StatusText = ex.Message;
-            CurrentState = State.Stopped;
-        }
-    }
-
-    private async Task StopAsync()
-    {
-        try
-        {
-            CurrentState = State.Stopping;
-            StatusText = "Stopping...";
-            await _mainController.StopAsync();
-            CurrentState = State.Stopped;
-            StatusText = "Stopped";
-            Log.Information("Redirector stopped");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Redirector stop failed");
-            StatusText = ex.Message;
-            CurrentState = State.Stopped;
-        }
+        await SaveSelectionAsync();
+        var processes = ProcessGroups.SelectMany(g => g.Processes).ToList();
+        await _liteModeManager.StartAsync(ProxyHost, ProxyPort, processes);
     }
 
     [RelayCommand]
@@ -279,7 +250,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (UnauthorizedAccessException)
         {
-            StatusText = $"Access denied: {path}";
+            _liteModeManager.StatusText = $"Access denied: {path}";
         }
     }
 
@@ -314,6 +285,7 @@ public partial class MainViewModel : ObservableObject
         var settings = _appContext.Settings;
         settings.LiteProxyHost = ProxyHost;
         settings.LiteProxyPort = ProxyPort;
+        settings.UseLocalhostOverride = UseLocalhostOverride;
         settings.SelectedAppPaths = _allApps
             .Where(a => a.IsSelected)
             .Select(a => a.InstallPath)
@@ -322,19 +294,20 @@ public partial class MainViewModel : ObservableObject
         await _configuration.SaveAsync();
     }
 
-    private static async Task<IPAddress?> ResolveHostAsync(string host)
+    private async Task SaveSelectionWithDebounceAsync()
     {
-        if (IPAddress.TryParse(host, out var ip))
-            return ip;
+        _saveCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _saveCts = cts;
 
         try
         {
-            var addresses = await Dns.GetHostAddressesAsync(host);
-            return addresses.FirstOrDefault();
+            await Task.Delay(500, cts.Token);
+            await SaveSelectionAsync();
         }
-        catch
+        catch (TaskCanceledException)
         {
-            return null;
         }
     }
 }
+

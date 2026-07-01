@@ -11,17 +11,21 @@
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="16">
             <TextBlock Text="Log" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center" />
-            <ToggleSwitch Header="Auto Scroll" IsOn="{x:Bind ViewModel.AutoScroll, Mode=TwoWay}" />
+            <ToggleSwitch Header="All Process Events"
+                          IsOn="{x:Bind ViewModel.ShowAllProcessEvents, Mode=TwoWay}" />
         </StackPanel>
 
-        <ListView Grid.Row="1"
-                  ItemsSource="{x:Bind ViewModel.LogEntries}"
-                  SelectionMode="None">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                    <TextBlock Text="{x:Bind}" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <ScrollViewer x:Name="LogScrollViewer"
+                      Grid.Row="1"
+                      Padding="0,4"
+                      ViewChanged="LogScrollViewer_ViewChanged">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleLogEntries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock Text="{x:Bind}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Margin="0,2" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
     </Grid>
 </Page>

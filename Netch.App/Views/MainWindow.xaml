@@ -9,7 +9,6 @@
                     SelectionChanged="NavView_SelectionChanged">
         <NavigationView.MenuItems>
             <NavigationViewItem x:Uid="NavHome" Tag="MainPage" />
-            <NavigationViewItem x:Uid="NavServers" Tag="ServersPage" />
             <NavigationViewItem x:Uid="NavModes" Tag="ModesPage" />
             <NavigationViewItem x:Uid="NavSubscriptions" Tag="SubscriptionPage" />
             <NavigationViewItem x:Uid="NavLog" Tag="LogPage" />

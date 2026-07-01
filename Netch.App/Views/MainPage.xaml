@@ -9,7 +9,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Row 0: SOCKS5 Proxy Input -->
@@ -18,10 +17,14 @@
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBox x:Uid="HostBox"
                          Text="{x:Bind ViewModel.ProxyHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         IsEnabled="{x:Bind ViewModel.IsHostEditable, Mode=OneWay}"
                          Width="200" />
                 <TextBox x:Uid="PortBox"
                          Text="{x:Bind ViewModel.ProxyPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Width="100" />
+                <CheckBox Content="自动填写本地 (127.0.0.1)"
+                          IsChecked="{x:Bind ViewModel.UseLocalhostOverride, Mode=TwoWay}"
+                          VerticalAlignment="Center" />
             </StackPanel>
         </StackPanel>
 
@@ -126,28 +129,8 @@
                 </ListView>
             </Grid>
         </Grid>
-
-        <!-- Row 2: Log Panel -->
-        <Expander Grid.Row="2" Header="Log" HorizontalAlignment="Stretch"
-                  IsExpanded="{x:Bind ViewModel.IsLogExpanded, Mode=TwoWay}">
-            <ListView ItemsSource="{x:Bind ViewModel.LogEntries}"
-                      MaxHeight="200"
-                      SelectionMode="None"
-                      Padding="4">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}"
-                                   FontSize="11"
-                                   FontFamily="Consolas"
-                                   IsTextSelectionEnabled="True"
-                                   TextWrapping="NoWrap" />
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Expander>
-
-        <!-- Row 3: Bottom Bar -->
-        <Grid Grid.Row="3" Padding="0,8,0,0"
+        <!-- Row 2: Bottom Bar -->
+        <Grid Grid.Row="2" Padding="0,8,0,0"
               BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
               BorderThickness="0,1,0,0">
             <Grid.ColumnDefinitions>
