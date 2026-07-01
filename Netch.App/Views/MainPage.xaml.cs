@@ -21,6 +21,7 @@ public sealed partial class MainPage : Page
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         ViewModel.Initialize();
+        DispatcherQueue.TryEnqueue(() => PortBox.Focus(FocusState.Programmatic));
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)

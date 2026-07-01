@@ -125,6 +125,7 @@ public static class AppDiscoveryService
     private static string? ResolveExePath(string? displayIcon)
     {
         if (string.IsNullOrWhiteSpace(displayIcon)) return null;
+
         var path = displayIcon.Split(',')[0].Trim('"');
         return File.Exists(path) && path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? path : null;
     }

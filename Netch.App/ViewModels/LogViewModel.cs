@@ -82,6 +82,10 @@ public partial class LogViewModel : ObservableObject, IDisposable
         if (ShowAllProcessEvents)
             return true;
 
+        // Successful TCP redirection lines do not include the process name, so keep them visible.
+        if (IsRedirectedTrafficEntry(entry))
+            return true;
+
         if (selectedNames.Count == 0)
             return false;
 
@@ -92,5 +96,15 @@ public partial class LogViewModel : ObservableObject, IDisposable
         }
 
         return false;
+    }
+
+    private static bool IsRedirectedTrafficEntry(string entry)
+    {
+        if (!entry.Contains("[tcpConnectRequest]", StringComparison.Ordinal) &&
+            !entry.Contains("[udpCreated]", StringComparison.Ordinal))
+            return false;
+
+        return !entry.Contains("[!", StringComparison.Ordinal) &&
+               !entry.Contains("[checkBypassName]", StringComparison.Ordinal);
     }
 }

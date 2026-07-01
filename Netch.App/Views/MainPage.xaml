@@ -19,7 +19,7 @@
                          Text="{x:Bind ViewModel.ProxyHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          IsEnabled="{x:Bind ViewModel.IsHostEditable, Mode=OneWay}"
                          Width="200" />
-                <TextBox x:Uid="PortBox"
+                <TextBox x:Uid="PortBox" x:Name="PortBox"
                          Text="{x:Bind ViewModel.ProxyPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Width="100" />
                 <CheckBox Content="自动填写本地 (127.0.0.1)"
@@ -42,20 +42,40 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <TextBox x:Uid="SearchBox" Grid.Row="0"
+                <TextBox x:Uid="SearchBox"
+                         Grid.Row="0"
                          Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 <ListView Grid.Row="1"
                           ItemsSource="{x:Bind ViewModel.FilteredApps}"
-                          SelectionMode="None">
+                          SelectionMode="None"
+                          Padding="0"
+                          Margin="0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="MinHeight" Value="32" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:InstalledApp">
-                            <CheckBox Content="{x:Bind Name}"
-                                      IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                            <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
                                       Click="AppCheckBox_Click"
                                       Tag="{x:Bind}"
                                       MinWidth="0"
-                                      Padding="4,2" />
+                                      MinHeight="32"
+                                      Padding="0"
+                                      Margin="0"
+                                      HorizontalAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch"
+                                      VerticalContentAlignment="Center">
+                                <CheckBox.Content>
+                                    <TextBlock Text="{x:Bind Name}"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" />
+                                </CheckBox.Content>
+                            </CheckBox>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -93,24 +113,21 @@
                                                Style="{StaticResource BodyStrongTextBlockStyle}"
                                                VerticalAlignment="Center" />
                                     <Button Grid.Column="1"
-                                            Content="&#xE8B7;"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            Content="Add folder"
                                             Margin="4,0"
                                             Padding="6,4"
                                             ToolTipService.ToolTip="Add folder"
                                             Tag="{x:Bind}"
                                             Click="AddToGroup_Click" />
                                     <Button Grid.Column="2"
-                                            Content="&#xE710;"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            Content="Add exe"
                                             Margin="4,0"
                                             Padding="6,4"
                                             ToolTipService.ToolTip="Add exe"
                                             Tag="{x:Bind}"
                                             Click="AddExeToGroup_Click" />
                                     <Button Grid.Column="3"
-                                            Content="&#xE74D;"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            Content="Remove"
                                             Padding="6,4"
                                             ToolTipService.ToolTip="Remove"
                                             Tag="{x:Bind}"
@@ -129,8 +146,10 @@
                 </ListView>
             </Grid>
         </Grid>
+
         <!-- Row 2: Bottom Bar -->
-        <Grid Grid.Row="2" Padding="0,8,0,0"
+        <Grid Grid.Row="2"
+              Padding="0,8,0,0"
               BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
               BorderThickness="0,1,0,0">
             <Grid.ColumnDefinitions>
@@ -144,7 +163,8 @@
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        TextTrimming="CharacterEllipsis" />
 
-            <Button Grid.Column="1"
+            <Button x:Name="StartStopButton"
+                    Grid.Column="1"
                     Content="{x:Bind ViewModel.ControlButtonText, Mode=OneWay}"
                     Command="{x:Bind ViewModel.StartStopCommand}"
                     Style="{StaticResource AccentButtonStyle}"

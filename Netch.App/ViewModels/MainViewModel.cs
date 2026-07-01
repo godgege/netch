@@ -154,7 +154,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             ? _allApps
             : _allApps.Where(a => a.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
 
-        foreach (var app in filtered)
+        foreach (var app in filtered
+                     .OrderByDescending(a => a.IsSelected)
+                     .ThenBy(a => a.Name, StringComparer.OrdinalIgnoreCase))
             FilteredApps.Add(app);
     }
 
@@ -175,6 +177,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         _ = SaveSelectionAsync();
+        ApplyFilter();
     }
 
     [RelayCommand(CanExecute = nameof(CanStartStop))]
@@ -236,6 +239,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             app.IsSelected = false;
 
         _ = SaveSelectionAsync();
+        ApplyFilter();
     }
 
     private void ScanDirectoryInto(string path, ProcessGroup group)
@@ -279,7 +283,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
             catch (DirectoryNotFoundException) { }
         }
     }
-
     private async Task SaveSelectionAsync()
     {
         var settings = _appContext.Settings;

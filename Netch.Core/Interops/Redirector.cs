@@ -53,6 +53,16 @@ public static class Redirector
         return Task.Run(aio_free);
     }
 
+    public static ulong GetUploadBytes()
+    {
+        return aio_getUP();
+    }
+
+    public static ulong GetDownloadBytes()
+    {
+        return aio_getDL();
+    }
+
     private const string Redirector_bin = "Redirector.bin";
 
     [DllImport(Redirector_bin, CallingConvention = CallingConvention.Cdecl)]
