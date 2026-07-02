@@ -254,7 +254,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         catch (UnauthorizedAccessException)
         {
-            _liteModeManager.StatusText = $"Access denied: {path}";
+            _liteModeManager.StatusText = $"访问被拒绝: {path}";
         }
     }
 

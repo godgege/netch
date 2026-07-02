@@ -27,16 +27,16 @@ public partial class LiteModeManager : ObservableObject
     private State _currentState = State.Waiting;
 
     [ObservableProperty]
-    private string _statusText = "Waiting for command";
+    private string _statusText = "等待操作";
 
     public bool CanStartStop => CurrentState is State.Waiting or State.Stopped or State.Started;
 
     public string ControlButtonText => CurrentState switch
     {
-        State.Waiting or State.Stopped => "Start",
-        State.Started => "Stop",
-        State.Starting => "Starting...",
-        State.Stopping => "Stopping...",
+        State.Waiting or State.Stopped => "启动",
+        State.Started => "停止",
+        State.Starting => "启动中...",
+        State.Stopping => "停止中...",
         _ => string.Empty
     };
 
@@ -52,7 +52,7 @@ public partial class LiteModeManager : ObservableObject
     {
         if (!ushort.TryParse(proxyPort, out var port) || port == 0)
         {
-            StatusText = "Please enter a valid port";
+            StatusText = "请输入有效的端口";
             return;
         }
 
@@ -65,16 +65,16 @@ public partial class LiteModeManager : ObservableObject
 
         if (selectedProcesses.Length == 0)
         {
-            StatusText = "No processes added";
+            StatusText = "未添加任何进程";
             return;
         }
 
-        StatusText = "Testing proxy connectivity...";
+        StatusText = "正在测试代理连接...";
         var ip = await ResolveHostAsync(proxyHost);
         if (ip == null)
         {
             Log.Warning("Cannot resolve host {Host}", proxyHost);
-            StatusText = $"Cannot resolve host: {proxyHost}";
+            StatusText = $"无法解析地址: {proxyHost}";
             return;
         }
 
@@ -82,7 +82,7 @@ public partial class LiteModeManager : ObservableObject
         if (delay >= 2000)
         {
             Log.Warning("Proxy {Host}:{Port} is not reachable (timeout)", proxyHost, port);
-            StatusText = $"Proxy not reachable: {proxyHost}:{port} (timeout)";
+            StatusText = $"代理不可达: {proxyHost}:{port} (连接超时)";
             return;
         }
 
@@ -121,10 +121,10 @@ public partial class LiteModeManager : ObservableObject
         try
         {
             CurrentState = State.Starting;
-            StatusText = "Starting...";
+            StatusText = "启动中...";
             await _mainController.StartAsync(server, mode);
             CurrentState = State.Started;
-            StatusText = "Running - no redirected traffic yet";
+            StatusText = "运行中 - 暂无转发流量";
             StartTrafficMonitor();
             Log.Information("Redirector started successfully");
         }
@@ -134,7 +134,7 @@ public partial class LiteModeManager : ObservableObject
             _currentProcessNames = Array.Empty<string>();
             OnPropertyChanged(nameof(CurrentProcessNames));
             Log.Error(ex, "Redirector start failed");
-            StatusText = ex.Message;
+            StatusText = $"启动失败: {ex.Message}";
             CurrentState = State.Stopped;
         }
     }
@@ -144,19 +144,19 @@ public partial class LiteModeManager : ObservableObject
         try
         {
             CurrentState = State.Stopping;
-            StatusText = "Stopping...";
+            StatusText = "停止中...";
             await StopTrafficMonitorAsync();
             await _mainController.StopAsync();
             _currentProcessNames = Array.Empty<string>();
             OnPropertyChanged(nameof(CurrentProcessNames));
             CurrentState = State.Stopped;
-            StatusText = "Stopped";
+            StatusText = "已停止";
             Log.Information("Redirector stopped");
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Redirector stop failed");
-            StatusText = ex.Message;
+            StatusText = $"停止失败: {ex.Message}";
             CurrentState = State.Stopped;
         }
     }
@@ -219,8 +219,8 @@ public partial class LiteModeManager : ObservableObject
             var total = upload + download;
 
             UpdateStatusText(total == 0
-                ? "Running - no redirected traffic yet"
-                : $"Running - UP {FormatBytes(upload)} / DOWN {FormatBytes(download)}");
+                ? "运行中 - 暂无转发流量"
+                : $"运行中 - 上传 {FormatBytes(upload)} / 下载 {FormatBytes(download)}");
 
             if (total > 0 && (lastLoggedTotal == 0 || total - lastLoggedTotal >= TrafficLogStepBytes))
             {

@@ -5,19 +5,17 @@
 
     <NavigationView x:Name="NavView"
                     IsBackButtonVisible="Collapsed"
-                    PaneDisplayMode="Left"
+                    IsSettingsVisible="False"
+                    PaneDisplayMode="Top"
                     SelectionChanged="NavView_SelectionChanged">
         <NavigationView.MenuItems>
-            <NavigationViewItem x:Uid="NavHome" Tag="MainPage" />
-            <NavigationViewItem x:Uid="NavModes" Tag="ModesPage" />
-            <NavigationViewItem x:Uid="NavSubscriptions" Tag="SubscriptionPage" />
-            <NavigationViewItem x:Uid="NavLog" Tag="LogPage" />
+            <NavigationViewItem Content="首页" Tag="MainPage" />
+            <NavigationViewItem Content="模式" Tag="ModesPage" />
+            <NavigationViewItem Content="订阅" Tag="SubscriptionPage" />
+            <NavigationViewItem Content="日志" Tag="LogPage" />
+            <NavigationViewItem Content="设置" Tag="SettingsPage" />
+            <NavigationViewItem Content="关于" Tag="AboutPage" />
         </NavigationView.MenuItems>
-
-        <NavigationView.FooterMenuItems>
-            <NavigationViewItem x:Uid="NavSettings" Tag="SettingsPage" />
-            <NavigationViewItem x:Uid="NavAbout" Tag="AboutPage" />
-        </NavigationView.FooterMenuItems>
 
         <Frame x:Name="ContentFrame" />
     </NavigationView>
