@@ -49,32 +49,15 @@
                           SelectionMode="None"
                           Padding="0"
                           Margin="0">
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="Padding" Value="0,2" />
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="MinHeight" Value="56" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:InstalledApp">
                             <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
                                       Click="AppCheckBox_Click"
                                       Tag="{x:Bind}"
-                                      MinWidth="0"
-                                      MinHeight="56"
-                                      Padding="4,6"
-                                      Margin="0"
-                                      HorizontalAlignment="Stretch"
-                                      HorizontalContentAlignment="Stretch"
-                                      VerticalContentAlignment="Center"
                                       ToolTipService.ToolTip="{x:Bind InstallPath}">
                                 <CheckBox.Content>
-                                    <StackPanel Spacing="2"
-                                                MinWidth="0"
-                                                VerticalAlignment="Center">
+                                    <StackPanel>
                                         <TextBlock Text="{x:Bind Name}"
-                                                   FontSize="14"
                                                    TextTrimming="CharacterEllipsis"
                                                    TextWrapping="NoWrap" />
                                         <TextBlock Text="{x:Bind InstallPath}"
