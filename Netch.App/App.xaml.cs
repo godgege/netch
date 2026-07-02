@@ -91,7 +91,10 @@ public partial class App : Application
     private void InitializeLogging()
     {
         var logPath = Path.Combine(_appContext.NetchDir, Constants.LogFile);
-        var uiSink = new UiLogSink(DispatcherQueue.GetForCurrentThread());
+        var liteModeManager = Services.GetRequiredService<LiteModeManager>();
+        var uiSink = new UiLogSink(
+            DispatcherQueue.GetForCurrentThread(),
+            () => liteModeManager.CurrentProcessNames);
         _uiLogSink = uiSink;
 
         Log.Logger = new LoggerConfiguration()

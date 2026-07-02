@@ -2,7 +2,8 @@
     x:Class="Netch.App.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:models="using:Netch.App.Models">
+    xmlns:models="using:Netch.App.Models"
+    IsTabStop="True">
 
     <Grid Padding="32" RowSpacing="20">
         <Grid.RowDefinitions>
@@ -52,7 +53,7 @@
                         <Style TargetType="ListViewItem">
                             <Setter Property="Padding" Value="0,2" />
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="MinHeight" Value="40" />
+                            <Setter Property="MinHeight" Value="56" />
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
@@ -61,18 +62,27 @@
                                       Click="AppCheckBox_Click"
                                       Tag="{x:Bind}"
                                       MinWidth="0"
-                                      MinHeight="40"
+                                      MinHeight="56"
                                       Padding="4,6"
                                       Margin="0"
                                       HorizontalAlignment="Stretch"
                                       HorizontalContentAlignment="Stretch"
-                                      VerticalContentAlignment="Center">
+                                      VerticalContentAlignment="Center"
+                                      ToolTipService.ToolTip="{x:Bind InstallPath}">
                                 <CheckBox.Content>
-                                    <TextBlock Text="{x:Bind Name}"
-                                               FontSize="14"
-                                               VerticalAlignment="Center"
-                                               TextTrimming="CharacterEllipsis"
-                                               TextWrapping="NoWrap" />
+                                    <StackPanel Spacing="2"
+                                                MinWidth="0"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind Name}"
+                                                   FontSize="14"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   TextWrapping="NoWrap" />
+                                        <TextBlock Text="{x:Bind InstallPath}"
+                                                   FontSize="12"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   TextWrapping="NoWrap" />
+                                    </StackPanel>
                                 </CheckBox.Content>
                             </CheckBox>
                         </DataTemplate>
@@ -170,3 +180,4 @@
         </Grid>
     </Grid>
 </Page>
+

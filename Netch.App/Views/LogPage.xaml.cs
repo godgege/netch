@@ -28,6 +28,7 @@ public sealed partial class LogPage : Page
         ViewModel.VisibleLogEntries.CollectionChanged -= LogEntries_CollectionChanged;
         ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
         LogScrollViewer.ViewChanged -= LogScrollViewer_ViewChanged;
+        ViewModel.Dispose();
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

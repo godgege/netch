@@ -15,7 +15,15 @@ public sealed partial class MainPage : Page
         ViewModel = App.Services.GetRequiredService<MainViewModel>();
         InitializeComponent();
         ViewModel.Initialize();
+        Loaded += OnLoaded;
         Unloaded += OnUnloaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        IsTabStop = true;
+        Focus(FocusState.Programmatic);
+        IsTabStop = false;
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -48,3 +56,4 @@ public sealed partial class MainPage : Page
             ViewModel.RemoveGroupCommand.Execute(group);
     }
 }
+

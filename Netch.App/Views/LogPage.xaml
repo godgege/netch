@@ -15,17 +15,36 @@
                           IsOn="{x:Bind ViewModel.ShowAllProcessEvents, Mode=TwoWay}" />
         </StackPanel>
 
-        <ScrollViewer x:Name="LogScrollViewer"
-                      Grid.Row="1"
-                      Padding="0,4"
-                      ViewChanged="LogScrollViewer_ViewChanged">
-            <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleLogEntries}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <TextBlock Text="{x:Bind}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Margin="0,2" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+        <Border Grid.Row="1"
+                Padding="12"
+                Background="{ThemeResource ControlFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="6">
+            <Grid>
+                <ScrollViewer x:Name="LogScrollViewer"
+                              Padding="0,4"
+                              ViewChanged="LogScrollViewer_ViewChanged"
+                              Visibility="{x:Bind ViewModel.LogEntriesVisibility, Mode=OneWay}">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleLogEntries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{x:Bind}"
+                                           FontFamily="Consolas"
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Margin="0,2" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <TextBlock Text="No log entries"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Visibility="{x:Bind ViewModel.EmptyLogVisibility, Mode=OneWay}" />
+            </Grid>
+        </Border>
     </Grid>
 </Page>
