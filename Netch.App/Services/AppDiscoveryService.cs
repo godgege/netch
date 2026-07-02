@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using Netch.App.Models;
 
@@ -6,6 +6,22 @@ namespace Netch.App.Services;
 
 public static class AppDiscoveryService
 {
+    private static readonly string[] SkipKeywords =
+    [
+        "android studio",
+        "antigravity",
+        "blend for visual studio",
+        "bcompare",
+        "cc switch",
+        "git gui",
+        "github desktop",
+        "gpuview",
+        "hermes",
+        "idle (python",
+        "microsoft edge",
+        "google chrome"
+    ];
+
     public static List<InstalledApp> DiscoverInstalledApps()
     {
         var apps = new Dictionary<string, InstalledApp>(StringComparer.OrdinalIgnoreCase);
@@ -33,6 +49,7 @@ public static class AppDiscoveryService
 
                 var displayName = subKey.GetValue("DisplayName") as string;
                 if (string.IsNullOrWhiteSpace(displayName)) continue;
+                if (ShouldSkip(displayName)) continue;
 
                 var systemComponent = subKey.GetValue("SystemComponent");
                 if (systemComponent is int sc && sc == 1) continue;
@@ -82,12 +99,13 @@ public static class AppDiscoveryService
 
                     var installPath = Path.GetDirectoryName(targetPath);
                     if (installPath == null) continue;
-
                     if (IsSystemPath(installPath)) continue;
+
+                    var name = Path.GetFileNameWithoutExtension(lnk);
+                    if (ShouldSkip(name)) continue;
 
                     if (!apps.ContainsKey(installPath))
                     {
-                        var name = Path.GetFileNameWithoutExtension(lnk);
                         apps[installPath] = new InstalledApp
                         {
                             Name = name,
@@ -101,6 +119,12 @@ public static class AppDiscoveryService
                 }
             }
         }
+    }
+
+    private static bool ShouldSkip(string name)
+    {
+        var normalized = name.Trim().ToLowerInvariant();
+        return SkipKeywords.Any(normalized.Contains);
     }
 
     private static string? ResolveInstallPath(string? installLocation, string? displayIcon)

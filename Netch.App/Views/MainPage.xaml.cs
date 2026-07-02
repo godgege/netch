@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Netch.App.Models;
@@ -14,14 +14,8 @@ public sealed partial class MainPage : Page
     {
         ViewModel = App.Services.GetRequiredService<MainViewModel>();
         InitializeComponent();
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
-    }
-
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
         ViewModel.Initialize();
-        DispatcherQueue.TryEnqueue(() => PortBox.Focus(FocusState.Programmatic));
+        Unloaded += OnUnloaded;
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
