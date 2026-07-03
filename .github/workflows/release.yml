@@ -79,11 +79,34 @@ jobs:
           7z a -mx9 Netch.7z release
           7z rn Netch.7z release Netch
 
+      - name: Package Velopack
+        shell: pwsh
+        run: |
+          .\build-velopack.ps1 -Configuration Release -PackDir release -OutputDir velopack -Version $env:GITHUB_REF_NAME
+
       - name: Checksum
         shell: pwsh
         run: |
-          $hash=(Get-FileHash Netch.7z -Algorithm SHA256).Hash.ToLower()
-          echo "NETCH_SHA256=$hash" | Out-File -Append -Encoding UTF8 -FilePath $Env:GITHUB_ENV
+          $body = @(
+            '[![](https://img.shields.io/badge/Telegram-Channel-blue)](https://t.me/netch_channel) [![](https://img.shields.io/badge/Telegram-Group-green)](https://t.me/netch_group)'
+            ''
+            '## Changelogs'
+            '* This is an automated deployment of GitHub Actions, the change log should be updated manually soon'
+            ''
+            '## 更新日志'
+            '* 这是 GitHub Actions 自动化部署，更新日志应该很快会手动更新'
+            ''
+            '## 校验和'
+            '| 文件名 | SHA256 |'
+            '| :- | :- |'
+          )
+          $files = @('Netch.7z') + (Get-ChildItem -Path velopack -File | Sort-Object Name | ForEach-Object { $_.FullName })
+          foreach ($file in $files) {
+            $item = Get-Item $file
+            $hash = (Get-FileHash $item.FullName -Algorithm SHA256).Hash.ToLower()
+            $body += "| $($item.Name) | $hash |"
+          }
+          $body | Out-File -Encoding UTF8 -FilePath RELEASE_BODY.md
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -94,15 +117,5 @@ jobs:
           draft: false
           files: |
             Netch.7z
-          body: |
-            [![](https://img.shields.io/badge/Telegram-Channel-blue)](https://t.me/netch_channel) [![](https://img.shields.io/badge/Telegram-Group-green)](https://t.me/netch_group)
-            ## Changelogs
-            * This is an automated deployment of GitHub Actions, the change log should be updated manually soon
-            
-            ## 更新日志
-            * 这是 GitHub Actions 自动化部署，更新日志应该很快会手动更新
-
-            ## 校验和
-            | 文件名 | SHA256 |
-            | :- | :- |
-            | Netch.7z | ${{ env.Netch_SHA256 }} |
+            velopack/*
+          body_path: RELEASE_BODY.md

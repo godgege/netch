@@ -11,6 +11,7 @@ using Netch.Services;
 using Netch.Utils;
 using Serilog.Events;
 using SingleInstance;
+using Velopack;
 #if RELEASE
 using Windows.Win32.UI.WindowsAndMessaging;
 #endif
@@ -30,6 +31,8 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        VelopackApp.Build().Run();
+
         // handle arguments
         if (args.Contains(Constants.Parameter.ForceUpdate))
             Flags.AlwaysShowNewVersionFound = true;
