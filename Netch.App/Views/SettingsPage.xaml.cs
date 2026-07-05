@@ -76,6 +76,10 @@ public sealed partial class SettingsPage : Page
         Grid.SetRow(SaveButton, twoColumns ? 3 : 5);
         Grid.SetColumn(SaveButton, 0);
         Grid.SetColumnSpan(SaveButton, twoColumns ? 2 : 1);
+
+        Grid.SetRow(AboutSection, twoColumns ? 4 : 6);
+        Grid.SetColumn(AboutSection, 0);
+        Grid.SetColumnSpan(AboutSection, twoColumns ? 2 : 1);
     }
 
     private static void ApplyRowLayout(Grid row, bool compact)

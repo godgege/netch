@@ -14,7 +14,6 @@
             <NavigationViewItem Content="订阅" Tag="SubscriptionPage" />
             <NavigationViewItem Content="日志" Tag="LogPage" />
             <NavigationViewItem Content="设置" Tag="SettingsPage" />
-            <NavigationViewItem Content="关于" Tag="AboutPage" />
         </NavigationView.MenuItems>
 
         <Frame x:Name="ContentFrame" />

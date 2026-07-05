@@ -17,6 +17,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly NetchAppContext _appContext;
     private readonly LiteModeManager _liteModeManager;
     private readonly Configuration _configuration;
+    private const string Socks5Protocol = "SOCKS5";
     private List<InstalledApp> _allApps = new();
     private CancellationTokenSource? _saveCts;
 
@@ -32,6 +33,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _useLocalhostOverride;
 
+    public string SelectedProxyProtocol { get; set; } = Socks5Protocol;
+
+    public IReadOnlyList<string> ProxyProtocols { get; } = [Socks5Protocol];
+
     public State CurrentState => _liteModeManager.CurrentState;
 
     public string StatusText => _liteModeManager.StatusText;
@@ -41,6 +46,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<InstalledApp> FilteredApps { get; } = new();
 
     public ObservableCollection<ProcessGroup> ProcessGroups { get; } = new();
+
+    public string SelectedAppsTitle => ProcessGroups.Count == 0 ? "已代理应用" : $"已代理应用 {ProcessGroups.Count}";
 
     public bool CanStartStop => _liteModeManager.CanStartStop;
 
@@ -57,6 +64,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public void Initialize()
     {
         var settings = _appContext.Settings;
+        SelectedProxyProtocol = Socks5Protocol;
         UseLocalhostOverride = settings.UseLocalhostOverride;
         ProxyHost = UseLocalhostOverride ? "127.0.0.1" : settings.LiteProxyHost;
         ProxyPort = settings.LiteProxyPort;
@@ -74,11 +82,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 var group = new ProcessGroup { GroupName = app.Name };
                 ScanDirectoryInto(app.InstallPath, group);
                 if (group.Processes.Count > 0)
+                {
                     ProcessGroups.Add(group);
+                    OnPropertyChanged(nameof(SelectedAppsTitle));
+                }
             }
         }
 
         ApplyFilter();
+        OnPropertyChanged(nameof(SelectedAppsTitle));
     }
 
     public void Dispose()
@@ -167,13 +179,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var group = new ProcessGroup { GroupName = app.Name };
             ScanDirectoryInto(app.InstallPath, group);
             if (group.Processes.Count > 0)
+            {
                 ProcessGroups.Add(group);
+                OnPropertyChanged(nameof(SelectedAppsTitle));
+            }
         }
         else
         {
             var group = ProcessGroups.FirstOrDefault(g => g.GroupName == app.Name);
             if (group != null)
+            {
                 ProcessGroups.Remove(group);
+                OnPropertyChanged(nameof(SelectedAppsTitle));
+            }
         }
 
         _ = SaveSelectionAsync();
@@ -234,6 +252,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void RemoveGroup(ProcessGroup group)
     {
         ProcessGroups.Remove(group);
+        OnPropertyChanged(nameof(SelectedAppsTitle));
         var app = _allApps.FirstOrDefault(a => a.Name == group.GroupName);
         if (app != null)
             app.IsSelected = false;
@@ -313,4 +332,3 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 }
-

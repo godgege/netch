@@ -5,142 +5,187 @@
     xmlns:models="using:Netch.App.Models"
     IsTabStop="True">
 
-    <Grid Padding="32" RowSpacing="20">
+    <Page.Resources>
+        <Style x:Key="HomeSectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="HomePaneTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="HomeActionButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="MinHeight" Value="30" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Padding="32,28,32,0" RowSpacing="16">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Spacing="12">
-            <TextBlock Text="SOCKS5 代理" Style="{StaticResource SubtitleTextBlockStyle}" />
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <TextBox PlaceholderText="代理地址"
+        <StackPanel Grid.Row="0" Spacing="10">
+            <TextBlock Text="代理" Style="{StaticResource HomeSectionTitleStyle}" />
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Bottom">
+                <ComboBox Header="协议"
+                          ItemsSource="{x:Bind ViewModel.ProxyProtocols}"
+                          SelectedItem="{x:Bind ViewModel.SelectedProxyProtocol, Mode=TwoWay}"
+                          IsEnabled="False"
+                          Width="132" />
+                <TextBox Header="代理地址"
+                         PlaceholderText="代理地址"
                          Text="{x:Bind ViewModel.ProxyHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          IsEnabled="{x:Bind ViewModel.IsHostEditable, Mode=OneWay}"
                          Width="200" />
                 <TextBox x:Name="PortBox"
+                         Header="端口"
                          PlaceholderText="端口"
                          Text="{x:Bind ViewModel.ProxyPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Width="100" />
                 <CheckBox Content="自动填写本地 (127.0.0.1)"
                           IsChecked="{x:Bind ViewModel.UseLocalhostOverride, Mode=TwoWay}"
-                          VerticalAlignment="Center" />
+                          VerticalAlignment="Bottom"
+                          Margin="0,0,0,6" />
             </StackPanel>
         </StackPanel>
 
-        <Grid Grid.Row="1" ColumnSpacing="16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="1.2*" />
-            </Grid.ColumnDefinitions>
+        <Border Grid.Row="1"
+                Height="1"
+                Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
-            <Grid Grid.Column="0" RowSpacing="8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+        <Grid Grid.Row="2" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-                <TextBox Grid.Row="0"
-                         PlaceholderText="搜索应用..."
-                         Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Grid.Row="0" Text="应用规则" Style="{StaticResource HomeSectionTitleStyle}" />
 
-                <ListView Grid.Row="1"
-                          ItemsSource="{x:Bind ViewModel.FilteredApps}"
-                          SelectionMode="None"
-                          Padding="0"
-                          Margin="0">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="models:InstalledApp">
-                            <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
-                                      Click="AppCheckBox_Click"
-                                      Tag="{x:Bind}"
-                                      ToolTipService.ToolTip="{x:Bind InstallPath}">
-                                <CheckBox.Content>
-                                    <StackPanel>
-                                        <TextBlock Text="{x:Bind Name}"
+            <Grid Grid.Row="1" ColumnSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.05*" />
+                    <ColumnDefinition Width="1.15*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" RowSpacing="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="应用列表" Style="{StaticResource HomePaneTitleStyle}" />
+
+                    <TextBox Grid.Row="1"
+                             PlaceholderText="搜索应用..."
+                             Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <ListView Grid.Row="2"
+                              ItemsSource="{x:Bind ViewModel.FilteredApps}"
+                              SelectionMode="None"
+                              Padding="0"
+                              Margin="0">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:InstalledApp">
+                                <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                          Click="AppCheckBox_Click"
+                                          Tag="{x:Bind}"
+                                          ToolTipService.ToolTip="{x:Bind InstallPath}">
+                                    <CheckBox.Content>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind Name}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       TextWrapping="NoWrap" />
+                                            <TextBlock Text="{x:Bind InstallPath}"
+                                                       FontSize="12"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+
+                <Grid Grid.Column="1" RowSpacing="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="{x:Bind ViewModel.SelectedAppsTitle, Mode=OneWay}"
+                               Style="{StaticResource HomePaneTitleStyle}" />
+
+                    <ListView Grid.Row="1"
+                              ItemsSource="{x:Bind ViewModel.ProcessGroups}"
+                              SelectionMode="None"
+                              Padding="0">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ProcessGroup">
+                                <Grid Padding="0,8,0,10" RowSpacing="5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" ColumnSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{x:Bind GroupName}"
+                                                   Style="{StaticResource BodyStrongTextBlockStyle}"
                                                    TextTrimming="CharacterEllipsis"
-                                                   TextWrapping="NoWrap" />
-                                        <TextBlock Text="{x:Bind InstallPath}"
-                                                   FontSize="12"
-                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   TextWrapping="NoWrap" />
-                                    </StackPanel>
-                                </CheckBox.Content>
-                            </CheckBox>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Grid>
+                                                   VerticalAlignment="Center" />
+                                        <Button Grid.Column="1"
+                                                Content="目录"
+                                                Style="{StaticResource HomeActionButtonStyle}"
+                                                ToolTipService.ToolTip="添加目录"
+                                                Tag="{x:Bind}"
+                                                Click="AddToGroup_Click" />
+                                        <Button Grid.Column="2"
+                                                Content="程序"
+                                                Style="{StaticResource HomeActionButtonStyle}"
+                                                ToolTipService.ToolTip="添加程序"
+                                                Tag="{x:Bind}"
+                                                Click="AddExeToGroup_Click" />
+                                        <Button Grid.Column="3"
+                                                Content="移除"
+                                                Style="{StaticResource HomeActionButtonStyle}"
+                                                ToolTipService.ToolTip="移除"
+                                                Tag="{x:Bind}"
+                                                Click="RemoveGroup_Click" />
+                                    </Grid>
 
-            <Grid Grid.Column="1" RowSpacing="8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Row="0" Text="已选择" Style="{StaticResource BodyStrongTextBlockStyle}" />
-
-                <ListView Grid.Row="1"
-                          ItemsSource="{x:Bind ViewModel.ProcessGroups}"
-                          SelectionMode="None">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="models:ProcessGroup">
-                            <Grid Padding="0,10" RowSpacing="6">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-
-                                <Grid Grid.Row="0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               Text="{x:Bind GroupName}"
-                                               Style="{StaticResource BodyStrongTextBlockStyle}"
-                                               VerticalAlignment="Center" />
-                                    <Button Grid.Column="1"
-                                            Content="添加目录"
-                                            Margin="4,0"
-                                            Padding="8,5"
-                                            ToolTipService.ToolTip="添加目录"
-                                            Tag="{x:Bind}"
-                                            Click="AddToGroup_Click" />
-                                    <Button Grid.Column="2"
-                                            Content="添加程序"
-                                            Margin="4,0"
-                                            Padding="8,5"
-                                            ToolTipService.ToolTip="添加程序"
-                                            Tag="{x:Bind}"
-                                            Click="AddExeToGroup_Click" />
-                                    <Button Grid.Column="3"
-                                            Content="移除"
-                                            Padding="8,5"
-                                            ToolTipService.ToolTip="移除"
-                                            Tag="{x:Bind}"
-                                            Click="RemoveGroup_Click" />
+                                    <TextBlock Grid.Row="1"
+                                               Text="{x:Bind DisplayText, Mode=OneWay}"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               FontSize="12" />
                                 </Grid>
-
-                                <TextBlock Grid.Row="1"
-                                           Text="{x:Bind DisplayText, Mode=OneWay}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                           TextWrapping="Wrap"
-                                           FontSize="12"
-                                           Margin="4,0,0,0" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
             </Grid>
         </Grid>
 
-        <Grid Grid.Row="2"
-              Padding="0,12,0,0"
+        <Grid Grid.Row="3"
+              MinHeight="56"
+              Padding="0,8,0,8"
               BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
               BorderThickness="0,1,0,0">
             <Grid.ColumnDefinitions>
@@ -160,8 +205,8 @@
                     Content="{x:Bind ViewModel.ControlButtonText, Mode=OneWay}"
                     Command="{x:Bind ViewModel.StartStopCommand}"
                     Style="{StaticResource AccentButtonStyle}"
-                    MinWidth="120" />
+                    MinWidth="120"
+                    VerticalAlignment="Center" />
         </Grid>
     </Grid>
 </Page>
-

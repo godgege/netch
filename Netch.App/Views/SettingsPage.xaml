@@ -40,6 +40,8 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -343,6 +345,26 @@
                     Style="{StaticResource AccentButtonStyle}"
                     HorizontalAlignment="Left"
                     MinWidth="120" />
+            <StackPanel x:Name="AboutSection"
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Spacing="10">
+                <TextBlock Text="关于" Style="{StaticResource SettingsSectionTitleStyle}" />
+
+                <StackPanel Margin="20,0,0,0" Spacing="6">
+                    <TextBlock Text="Netch" FontSize="16" FontWeight="SemiBold" />
+                    <TextBlock Text="支持多协议的 Windows 代理客户端。"
+                               TextWrapping="Wrap"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="许可证：GPLv3"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <HyperlinkButton Content="GitHub"
+                                     NavigateUri="https://github.com/netchx/netch"
+                                     Padding="0"
+                                     HorizontalAlignment="Left" />
+                </StackPanel>
+            </StackPanel>
         </Grid>
     </ScrollViewer>
 </Page>

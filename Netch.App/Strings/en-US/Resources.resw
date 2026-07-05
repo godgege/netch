@@ -49,9 +49,6 @@
   <data name="NavSettings.Content" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="NavAbout.Content" xml:space="preserve">
-    <value>About</value>
-  </data>
 
   <!-- Status/Buttons -->
   <data name="Start" xml:space="preserve">

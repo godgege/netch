@@ -6,28 +6,13 @@ namespace Netch.App.Services;
 
 public static class AppDiscoveryService
 {
-    private static readonly string[] SkipKeywords =
-    [
-        "android studio",
-        "antigravity",
-        "blend for visual studio",
-        "bcompare",
-        "cc switch",
-        "git gui",
-        "github desktop",
-        "gpuview",
-        "hermes",
-        "idle (python",
-        "microsoft edge",
-        "google chrome"
-    ];
-
     public static List<InstalledApp> DiscoverInstalledApps()
     {
         var apps = new Dictionary<string, InstalledApp>(StringComparer.OrdinalIgnoreCase);
 
-        ScanRegistry(apps, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
-        ScanRegistry(apps, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
+        ScanRegistry(apps, Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
+        ScanRegistry(apps, Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
+        ScanRegistry(apps, Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
         ScanStartMenu(apps);
 
         return apps.Values
@@ -35,9 +20,9 @@ public static class AppDiscoveryService
             .ToList();
     }
 
-    private static void ScanRegistry(Dictionary<string, InstalledApp> apps, string keyPath)
+    private static void ScanRegistry(Dictionary<string, InstalledApp> apps, RegistryKey rootKey, string keyPath)
     {
-        using var key = Registry.LocalMachine.OpenSubKey(keyPath);
+        using var key = rootKey.OpenSubKey(keyPath);
         if (key == null) return;
 
         foreach (var subKeyName in key.GetSubKeyNames())
@@ -49,7 +34,6 @@ public static class AppDiscoveryService
 
                 var displayName = subKey.GetValue("DisplayName") as string;
                 if (string.IsNullOrWhiteSpace(displayName)) continue;
-                if (ShouldSkip(displayName)) continue;
 
                 var systemComponent = subKey.GetValue("SystemComponent");
                 if (systemComponent is int sc && sc == 1) continue;
@@ -102,7 +86,6 @@ public static class AppDiscoveryService
                     if (IsSystemPath(installPath)) continue;
 
                     var name = Path.GetFileNameWithoutExtension(lnk);
-                    if (ShouldSkip(name)) continue;
 
                     if (!apps.ContainsKey(installPath))
                     {
@@ -119,12 +102,6 @@ public static class AppDiscoveryService
                 }
             }
         }
-    }
-
-    private static bool ShouldSkip(string name)
-    {
-        var normalized = name.Trim().ToLowerInvariant();
-        return SkipKeywords.Any(normalized.Contains);
     }
 
     private static string? ResolveInstallPath(string? installLocation, string? displayIcon)

@@ -84,7 +84,6 @@ public sealed partial class MainWindow : Window
             "SubscriptionPage" => typeof(SubscriptionPage),
             "LogPage" => typeof(LogPage),
             "SettingsPage" => typeof(SettingsPage),
-            "AboutPage" => typeof(AboutPage),
             _ => null
         };
 
